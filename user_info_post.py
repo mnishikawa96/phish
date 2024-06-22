@@ -25,11 +25,7 @@ def generate_random_password(length=10):
     characters = string.ascii_letters + string.digits
     return ''.join(random.choice(characters) for i in range(length))
 
-async def process_url(url):
-    used_user_ids = set()  # 各URLごとにユーザIDを管理するセットを作成
-    user = generate_random_user(used_user_ids)
-    pw = generate_random_password()
-    
+async def process_user(url, user, pw):
     if proxy_server:
         browser = await uc.start(headless=False, browser_args=[f'--proxy-server={proxy_server}', "--window-size=550,968"])
     else:
@@ -56,8 +52,24 @@ async def process_url(url):
     finally:
         await browser.close()
 
+async def process_url(url, num_users):
+    used_user_ids = set()  # 各URLごとにユーザIDを管理するセットを作成
+    tasks = []
+
+    for _ in range(num_users):
+        user = generate_random_user(used_user_ids)
+        pw = generate_random_password()
+        print(user)
+        tasks.append(asyncio.create_task(process_user(url, user, pw)))
+
+    await asyncio.gather(*tasks)
+
 async def main():
-    tasks = [process_url(url) for url in urls]
+    num_users = 10000  # 各URLに対して使用するユーザIDの数を指定
+    # TODO: これだとユーザを生成してからスタートになるため、先にファイルに投げるユーザIDを作成しておく方が良いかも
+    tasks = []
+    for url in urls:
+        tasks.append(process_url(url, num_users))
     await asyncio.gather(*tasks)
 
 uc.loop().run_until_complete(main())
