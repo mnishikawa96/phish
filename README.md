@@ -17,3 +17,7 @@ pip install nodriver
 
 ### コード実行→ブラウザすごい立ち上がるので最初は5件くらいで試すのがよさそうです。
 python user_info_post.py
+
+### 送るユーザの変更
+user_info_post.py
+num_users = 10000　←　この数字を1 にすると1ユーザのみ登録します。
