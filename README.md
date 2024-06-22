@@ -1,7 +1,7 @@
 # phish
 
 # Macでの実行
-### 作業のディレクトリに移動
+### 作業のディレクトリに移動(好きな)
 cd ~/projects/myproject
 
 ここにurl.txt と user_info_post.py を置いておく
