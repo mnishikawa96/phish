@@ -19,5 +19,5 @@ pip install nodriver
 python user_info_post.py
 
 ### 送るユーザの変更
-user_info_post.py
+user_info_post.py にある<br>
 num_users = 10000　←　この数字を1 にすると1ユーザのみ登録します。
