@@ -84,12 +84,13 @@ def print_callback(message, context):
 
                         # SANが複数ある場合、情報をファイルに書き出す
                         if len(all_domains) > 20:
+                            # ドメインをhttps://形式に変換
                             urls = [f"https://{domain}" for domain in all_domains]
-                            "urls": urls,
-                            cert_info = {
+                            cert_info_with_urls = {
                                 "subject": subject,
                                 "issuer": issuer,
                                 "all_domains": all_domains,
+                                "urls": urls,
                                 "not_before_utc": not_before_date_utc.isoformat(),
                                 "not_before_jst": not_before_date_jst.isoformat(),
                                 "received_time_utc": received_time_utc.isoformat(),
@@ -97,23 +98,7 @@ def print_callback(message, context):
                                 "current_time_utc": current_time_utc.isoformat(),
                                 "current_time_jst": current_time_jst.isoformat()
                             }
-                            write_to_file(cert_info)
-
-                            # ドメインをhttps://形式に変換
-                            # urls = [f"https://{domain}" for domain in all_domains]
-                            # cert_info_with_urls = {
-                            #     "subject": subject,
-                            #     "issuer": issuer,
-                            #     "all_domains": all_domains,
-                            #     "urls": urls,
-                            #     "not_before_utc": not_before_date_utc.isoformat(),
-                            #     "not_before_jst": not_before_date_jst.isoformat(),
-                            #     "received_time_utc": received_time_utc.isoformat(),
-                            #     "received_time_jst": received_time_jst.isoformat(),
-                            #     "current_time_utc": current_time_utc.isoformat(),
-                            #     "current_time_jst": current_time_jst.isoformat()
-                            # }
-                            
+                            write_to_file(cert_info_with_urls)
                             # send_email("New Certificate", json.dumps(cert_info_with_urls, indent=2))
                             print("Certificate written to file.")
     except Exception as e:
