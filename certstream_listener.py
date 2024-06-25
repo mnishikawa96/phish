@@ -5,13 +5,17 @@ import smtplib
 from email.mime.text import MIMEText
 import os
 import time
+import logging
 
 # メール送信のための設定
-SMTP_SERVER = 'smtp.gmail.com'
+SMTP_SERVER = ''
 SMTP_PORT = 587
 EMAIL_ADDRESS = ''
 EMAIL_PASSWORD = ''
 TO_ADDRESS = ''
+
+# ログファイルの設定
+logging.basicConfig(filename='certstream.log', level=logging.INFO, format='%(asctime)s - %(message)s')
 
 # ファイル名を生成する関数
 def generate_unique_filename(base_filename):
@@ -29,9 +33,9 @@ def write_to_file(data):
         with open(filename, 'a') as f:
             f.write(json.dumps(data, indent=2))
             f.write("\n\n")
-        print(f"Data written to file {filename}.")
+        logging.info(f"Data written to file {filename}.")
     except Exception as e:
-        print(f"Failed to write to file: {e}")
+        logging.error(f"Failed to write to file: {e}")
 
 def send_email(subject, message):
     msg = MIMEText(message)
@@ -45,10 +49,10 @@ def send_email(subject, message):
                 server.starttls()
                 server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
                 server.sendmail(EMAIL_ADDRESS, TO_ADDRESS, msg.as_string())
-            print("Email sent successfully.")
+            logging.info("Email sent successfully.")
             return
         except Exception as e:
-            print(f"Failed to send email, attempt {attempt + 1}: {e}")
+            logging.error(f"Failed to send email, attempt {attempt + 1}: {e}")
             time.sleep(5)  # リトライの前に少し待機
 
 def print_callback(message, context):
@@ -99,27 +103,15 @@ def print_callback(message, context):
                                 "current_time_jst": current_time_jst.isoformat()
                             }
                             write_to_file(cert_info_with_urls)
-                            # send_email("New Certificate", json.dumps(cert_info_with_urls, indent=2))
-                            print("Certificate written to file.")
+                            send_email("New Certificate", json.dumps(cert_info_with_urls, indent=2))
+                            logging.info("Certificate written to file and email sent.")
     except Exception as e:
-        print(f"Error in callback: {e}")
+        logging.error(f"Error in callback: {e}")
 
-# def listen_for_events_with_reconnect():
-#     action = True
-#     while action:
-#         try:
-#             certstream.listen_for_events(print_callback, url='wss://certstream.calidog.io/')
-#         except KeyboardInterrupt:
-#             action = False
-#             print("KeyboardInterrupt received. Exiting...")
-#             break
-#         except Exception as e:
-#             print(f"Listener encountered an error: {e}. Reconnecting in 5 seconds...")
-#             time.sleep(5)  # 再接続前に少し待機
+def on_open():
+    logging.info("Connection successfully established!")
 
-# print("Starting Certstream listener...")
-# try:
-#     listen_for_events_with_reconnect()
-# except KeyboardInterrupt:
-#     print("Program terminated by user. Exiting...")
-certstream.listen_for_events(print_callback, url='wss://certstream.calidog.io/')
+def on_error(exception):
+    logging.error(f"Exception in CertStreamClient! -> {exception}")
+
+certstream.listen_for_events(print_callback, on_open=on_open, on_error=on_error, url='wss://certstream.calidog.io/')
